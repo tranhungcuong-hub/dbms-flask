@@ -1,0 +1,77 @@
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- ADD_INPATIENT
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `ADD_INPATIENT`	(IN PATcode char(11),IN addr varchar(50),IN fname varchar(50),
+								IN lname varchar(50),IN birth date, IN gender char(1),IN pnum char(10),
+								IN nur_code varchar(5), IN DOA date, IN room tinyint(3), IN DOD date, IN fee decimal(10,2), IN dia varchar(50))
+BEGIN
+	INSERT INTO patient VALUES (PATcode, addr, fname, lname, birth, gender, pnum);
+    INSERT INTO inpatient VALUES (PATcode, nur_code, DOA, room, DOD, fee, dia);
+END
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- ADD_OUTPATIENT
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `ADD_OUTPATIENT`(IN PATcode char(11),IN addr varchar(50),IN fname varchar(50),
+									IN lname varchar(50),IN birth date, IN gender char(1),IN pnum char(10),
+                                    IN DOCcode smallint(5))
+BEGIN
+	INSERT INTO patient VALUES (PATcode, addr, fname, lname, birth, gender, pnum);
+    INSERT INTO outpatient VALUES (PATcode, DOCcode);
+END
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- PRINT_PATIENTS_HAVE_DOCTOR
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `PRINT_PATIENTS_HAVE_DOCTOR`(FirstName varchar(50), LastName varchar(50))
+BEGIN
+	SELECT P.`Address` ,P.`Last Name`, P.`First Name`, P.`Date of Birth`, P.`Gender`, P.`Phone number`
+	FROM `mydb`.`PATIENT` as P, `mydb`.`OUTPATIENT` as O, `mydb`.`DOCTOR` as D, `mydb`.`EMPLOYEE` as E
+	WHERE P.`PATCode` = O.`OUTCode` and O.`ExaminingDOCcode` = D.`DOCcode` and E.`EMPcode` = D.`DOCcode` and E.`First Name` = FirstName and E.`Last Name` = LastName
+	UNION ALL
+    SELECT P.`Address` ,P.`Last Name`, P.`First Name`, P.`Date of Birth`, P.`Gender`, P.`Phone number`
+	FROM `mydb`.`PATIENT` as P, `mydb`.`INPATIENT` as I, `mydb`.`DOCTOR` as D, `mydb`.`EMPLOYEE` as E, `mydb`.`is_treated_by` T
+	WHERE P.`PATCode` = I.`INcode` and I.`INcode` = T.`INcode` and T.`DOCcode` = D.`DOCcode` and E.`EMPcode` = D.`DOCcode` and E.`First Name` = FirstName and E.`Last Name` = LastName;
+END
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- SEARCH_PATIENT
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `Search_patient`(IN FirstName varchar(50), IN LastName varchar(50))
+BEGIN
+	SELECT * FROM PATIENT
+    WHERE `First Name` = FirstName and `Last Name` = LastName;
+END
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- TOTAL_PAYMENT
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `TOTAL_PAYMENT`(IN PAT char(11))
+BEGIN
+	IF LEFT(PAT, 2) = 'IP' THEN
+		SELECT
+			I.INcode as ID, 
+			P.`First Name`,
+            P.`Last Name`,
+            I.`Date of admission` as Date_of_Admission,
+            SUM(M.price) as MEDICATION_BILL, 
+            I.Fee as Fee, 
+            SUM(M.price) + I.Fee as TOTAL_PAYMENT
+		FROM medication as M, is_treated_by_medication as TM, inpatient as I, patient as P
+		WHERE 	TM.INcode = PAT AND I.INcode = PAT AND P.PATcode = PAT
+				AND TM.MEDcode = M.MEDcode;
+	elseif LEFT(PAT, 2) = 'OP' THEN
+		SELECT 
+				EM.OUTcode as ID,
+				P.`First Name`,
+				P.`Last Name`,
+                EM.Date as Examination_Date,
+				SUM(M.price) as MEDICATION_BILL,
+                EM.Fee as Fee,
+                SUM(M.price) + EM.Fee as TOTAL_PAYMENT
+        FROM outpatient_examination_medication as EM, medication as M, patient as P
+        WHERE EM.MEDcode = M.MEDcode AND EM.OUTcode = PAT AND P.PATcode = PAT
+        GROUP BY EM.Date;
+        else select '' as Problem;
+    END IF;
+END

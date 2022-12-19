@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Add Outpatient</title>
+        <link rel="stylesheet" href="/static/style_add.css"> 
+    </head>
+<body>
+    <div class="center">
+        <h1>
+            Add Outpatient Information
+        </h1>
+        <form method="POST">
+            <div class="text_field">
+                <input type="text" name="code" required>
+                <span></span>
+                <label>Patient code</label>
+            </div>
+            <div class="text_field">
+                <input type="text" name="firstname" required>
+                <span></span>
+                <label>First name</label>
+            </div>
+            <div class="text_field">
+                <input type="text" name="lastname" required>
+                <span></span>
+                <label>Last name</label>
+            </div>
+            <div class="text_field">
+                <input type="text" name="address" required>
+                <span></span>
+                <label>Address</label>
+            </div>
+            <div class="text_field">
+                <input type="text" name="birthday" required>
+                <span></span>
+                <label>Date of birth:  YYYY-MM-DD</label>
+            </div>
+            <div class="text_field">
+                <input type="text" name="gender" required>
+                <span></span>
+                <label>Gender (male = m and female = f)</label>
+            </div>
+            <div class="text_field">
+                <input type="text" name="phonenumber" required>
+                <span></span>
+                <label>Phone number</label>
+            </div>
+            <div class="text_field">
+                <input type="text" name="doc_code" required>
+                <span></span>
+                <label>Doctor code</label>
+            </div>
+            <input type="submit" name="button" value="Add">
+        </form>
+        <form method="POST">
+            <input type="submit" name="button" value="Home">            
+        </form>
+    </div>
+</body>
+</html>
